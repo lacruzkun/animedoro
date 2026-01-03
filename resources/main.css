@@ -26,6 +26,10 @@
   color: #6495ED;
 }
 
+#BlueThemeLabel{
+  font-size: 24px;
+  color: #ffffff;
+}
 
 
 #BlueButton {
@@ -49,6 +53,24 @@
   padding: 12.8px 48px;
 }
 
+#BlueThemeButton {
+  background-color: #38f;
+  background-image: none;
+  color: #fff;
+  border-radius: 10px;
+  border-width: 2px;
+  padding: 12.8px 48px;
+}
+
+#BlueThemeButton:hover {
+  background-color: #8cf;
+  color: #999;
+}
+
+#BlueThemeButton:active {
+  background-color: #000;
+}
+
 #BlueButton:hover {
   background-color: #8cf;
   color: #999;
@@ -63,7 +85,6 @@
 }
 
 /* Dark Theme */
-
 #Dark{
   background-image: url("../resources/Dark.png");
   background-size: cover;
@@ -92,12 +113,29 @@
   padding: 12.8px 48px;
 }
 
+#DarkThemeButton {
+  background-color: #282828;
+  background-image: none;
+  border-radius: 10px;
+  border-width: 2px;
+  padding: 12.8px 48px;
+}
+
 #DarkButton:hover {
   background-color: #f88;
   color: #999;
 }
 
 #DarkButton:active {
+  background-color: #ddd;
+}
+
+#DarkThemeButton:hover {
+  background-color: #f88;
+  color: #999;
+}
+
+#DarkThemeButton:active {
   background-color: #ddd;
 }
 
@@ -122,5 +160,182 @@
 
 #DarklaCruz{
   font-size: 18px;
+  color: #aeaeae;
+}
+
+#DarkThemeLabel{
+  font-size: 24px;
+  color: #aeaeae;
+}
+
+
+/* Serene Theme */
+#Serene{
+  background-image: url("../resources/Serene.jpeg");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+#SereneButton {
+  background-color: #DAA06D;
+  background-image: none;
+  color: #fff;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif,
+    Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+  font-size: 100%;
+  font-weight: 900;
+  line-height: 1.5;
+  margin: 0;
+  padding: 0;
+  text-transform: uppercase;
+}
+
+#SereneButton {
+  border-radius: 1584px;
+  border-width: 2px;
+  padding: 12.8px 48px;
+}
+
+#SereneThemeButton {
+  background-color: #DAA06D;
+  background-image: none;
+  color: #fff;
+  border-radius: 10px;
+  border-width: 2px;
+  padding: 12.8px 48px;
+}
+
+#SereneButton:hover {
+  background-color: #CCCCFF;
+  color: #999;
+}
+
+#SereneButton:active {
+  background-color: #ddd;
+}
+
+#SereneThemeButton:hover {
+  background-color: #CCCCFF;
+  color: #999;
+}
+
+#SereneThemeButton:active {
+  background-color: #ddd;
+}
+
+#SereneButton image {
+  -gtk-icon-size: 40px;
+}
+
+#Serenetime {
+  font-family: "Iosevka Nerd Font Mono";
+  font-size: 100px;
+  font-weight: bold;
+  color: #aeaeae;
+}
+
+#Sereneanimedoro{
+  font-family: "Iosevka Nerd Font Mono";
+  font-size: 100px;
+  font-size: 48px;
+  font-weight: bold;
+  color: #aeaeae;
+}
+
+#SerenelaCruz{
+  font-size: 18px;
+  color: #aeaeae;
+}
+
+#SereneThemeLabel{
+  font-size: 24px;
+  color: #aeaeae;
+}
+
+
+/* Dream Theme */
+#Dream{
+  background-image: url("../resources/Dream.gif");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+#DreamButton {
+  background-color: #5F8575;
+  background-image: none;
+  color: #fff;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif,
+    Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+  font-size: 100%;
+  font-weight: 900;
+  line-height: 1.5;
+  margin: 0;
+  padding: 0;
+  text-transform: uppercase;
+}
+
+#DreamButton {
+  border-radius: 1584px;
+  border-width: 2px;
+  padding: 12.8px 48px;
+}
+
+#DreamThemeButton {
+  background-color: #5F8575;
+  background-image: none;
+  color: #fff;
+  border-radius: 10px;
+  border-width: 2px;
+  padding: 12.8px 48px;
+}
+
+#DreamButton:hover {
+  background-color: #CCCCFF;
+  color: #999;
+}
+
+#DreamButton:active {
+  background-color: #ddd;
+}
+
+#DreamThemeButton:hover {
+  background-color: #CCCCFF;
+  color: #999;
+}
+
+#DreamThemeButton:active {
+  background-color: #ddd;
+}
+
+#DreamButton image {
+  -gtk-icon-size: 40px;
+}
+
+#Dreamtime {
+  font-family: "Iosevka Nerd Font Mono";
+  font-size: 100px;
+  font-weight: bold;
+  color: #50C878;
+}
+
+#Dreamanimedoro{
+  font-family: "Iosevka Nerd Font Mono";
+  font-size: 100px;
+  font-size: 48px;
+  font-weight: bold;
+  color: #aeaeae;
+}
+
+#DreamlaCruz{
+  font-size: 18px;
+  color: #aeaeae;
+}
+
+#SereneThemeLabel{
+  font-size: 24px;
   color: #aeaeae;
 }

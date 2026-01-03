@@ -34,13 +34,17 @@ enum AppMode {
 enum AppTheme {
     Dark,
     Blue,
+    Serene,
+    Dream,
 }
 
 impl AppTheme {
     fn get_next_theme(&self) -> Self {
         match self {
             AppTheme::Dark => AppTheme::Blue,
-            AppTheme::Blue => AppTheme::Dark,
+            AppTheme::Blue => AppTheme::Serene,
+            AppTheme::Serene => AppTheme::Dream,
+            AppTheme::Dream => AppTheme::Dark,
         }
     }
 }
@@ -98,15 +102,18 @@ impl SimpleComponent for App {
                 #[wrap(Some)]
                 set_end_widget = &gtk::Box{
                     set_orientation: gtk::Orientation::Vertical,
+                    set_spacing: 10,
                     gtk::Label {
                         set_label: "Current Theme",
+                        #[watch]
+                        set_widget_name: &format!("{}ThemeLabel", model.theme.to_string()),
                     },
 
                     gtk::Button{
                         #[watch]
                         set_label: &model.theme.to_string(),
                         #[watch]
-                        set_widget_name: &format!("{}Button", model.theme.to_string()),
+                        set_widget_name: &format!("{}ThemeButton", model.theme.to_string()),
                         connect_clicked => AppMsg::ChangeTheme,
                     },
                 },
