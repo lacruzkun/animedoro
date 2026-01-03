@@ -1,3 +1,5 @@
+use core::fmt;
+
 use gtk::glib::{self, SourceId, clone};
 use gtk::{gdk, prelude::*};
 use relm4::prelude::*;
@@ -6,16 +8,38 @@ struct App {
     second: i32,
     minute: i32,
     hour: i32,
+    theme: AppTheme,
     timer: Option<SourceId>,
     pause_continue: String,
 }
 
 #[derive(Debug)]
 enum AppMsg {
-    StopTimer,
+    Settings,
     IncTime,
     StartTimer,
     ResetTimer,
+}
+
+#[derive(Debug)]
+enum AppTheme {
+    Dark,
+    Blue,
+}
+
+impl AppTheme {
+    fn get_next_theme(&self) -> Self {
+        match self {
+            AppTheme::Dark => AppTheme::Blue,
+            AppTheme::Blue => AppTheme::Dark,
+        }
+    }
+}
+
+impl fmt::Display for AppTheme {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self)
+    }
 }
 
 #[relm4::component]
@@ -28,7 +52,8 @@ impl SimpleComponent for App {
         set_title: Some("Animedoro"),
         set_default_width: 800,
         set_default_height: 400,
-        add_css_class: "bg-window",
+        #[watch]
+        set_widget_name: &model.theme.to_string(),
         set_modal: true,
 
         gtk::CenterBox {
@@ -119,7 +144,7 @@ impl SimpleComponent for App {
 
                         gtk::Button {
                             set_label: "Settings",
-                            connect_clicked => AppMsg::StartTimer,
+                            connect_clicked => AppMsg::Settings,
                         },
                     },
                 },
@@ -138,6 +163,7 @@ impl SimpleComponent for App {
             second: 0,
             minute: 0,
             hour: 0,
+            theme: AppTheme::Blue,
             timer: None,
             pause_continue: String::from("Start"),
         };
@@ -179,23 +205,33 @@ impl SimpleComponent for App {
             }
 
             AppMsg::IncTime => {
-                self.second += 1;
+                if self.second == 59 {
+                    self.second = 0;
+                    self.minute += 1;
+                } else {
+                    self.second += 1;
+                }
+
+                if self.minute == 59 {
+                    self.minute = 0;
+                    self.hour += 1;
+                }
             }
 
-            AppMsg::StopTimer => {
-                if let Some(id) = self.timer.take() {
-                    id.remove();
-                }
+            AppMsg::Settings => {
+                self.theme = self.theme.get_next_theme();
+                println!("{}", self.theme.to_string());
             }
 
             AppMsg::ResetTimer => {
                 self.pause_continue = String::from("Start");
                 if let Some(id) = self.timer.take() {
                     id.remove();
-                    self.second = 0;
-                    self.minute = 0;
-                    self.hour = 0;
                 }
+                self.second = 0;
+                self.minute = 0;
+                self.hour = 0;
+                self.theme = AppTheme::Dark;
             }
         }
     }

@@ -1,6 +1,12 @@
-.bg-window{
-  /* backdrop-filter: blur(35px); */
-  background-image: url("../resources/1299626.jpg");
+#Blue{
+  background-image: url("../resources/Blue.jpg");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+#Dark{
+  background-image: url("../resources/Dark.png");
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;
