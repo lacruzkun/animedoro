@@ -11,14 +11,23 @@ struct App {
     theme: AppTheme,
     timer: Option<SourceId>,
     pause_continue: String,
+    mode: AppMode,
 }
 
 #[derive(Debug)]
 enum AppMsg {
-    Settings,
+    ChangeTheme,
     IncTime,
     StartTimer,
     ResetTimer,
+    Work,
+    Watch,
+}
+
+#[derive(Debug)]
+enum AppMode {
+    Work,
+    Watch,
 }
 
 #[derive(Debug)]
@@ -64,19 +73,42 @@ impl SimpleComponent for App {
             set_margin_end: 50,
 
             #[wrap(Some)]
-            set_start_widget = &gtk::Box {
+            set_start_widget = &gtk::CenterBox{
                 set_orientation: gtk::Orientation::Vertical,
 
-                gtk::Label {
-                    set_label: "Animedoro",
-                    set_halign: gtk::Align::Start,
-                    add_css_class: "animedoro",
+                #[wrap(Some)]
+                set_start_widget = &gtk::Box {
+                    set_orientation: gtk::Orientation::Vertical,
+
+                    gtk::Label {
+                        set_label: "Animedoro",
+                        set_halign: gtk::Align::Start,
+                        #[watch]
+                        set_widget_name: &format!("{}animedoro", model.theme.to_string()),
+                    },
+
+                    gtk::Label {
+                        set_label: "by La Cruz",
+                        set_halign: gtk::Align::End,
+                        #[watch]
+                        set_widget_name: &format!("{}laCruz", model.theme.to_string()),
+                    },
                 },
 
-                gtk::Label {
-                    set_label: "by La Cruz",
-                    set_halign: gtk::Align::End,
-                    add_css_class: "laCruz",
+                #[wrap(Some)]
+                set_end_widget = &gtk::Box{
+                    set_orientation: gtk::Orientation::Vertical,
+                    gtk::Label {
+                        set_label: "Current Theme",
+                    },
+
+                    gtk::Button{
+                        #[watch]
+                        set_label: &model.theme.to_string(),
+                        #[watch]
+                        set_widget_name: &format!("{}Button", model.theme.to_string()),
+                        connect_clicked => AppMsg::ChangeTheme,
+                    },
                 },
             },
 
@@ -112,10 +144,16 @@ impl SimpleComponent for App {
                                         set_label: "Work",
                                     },
                                 },
+                                #[watch]
+                                set_widget_name: &format!("{}Button", model.theme.to_string()),
+                                connect_clicked => AppMsg::Work,
                             },
 
                             gtk::Button {
                                 set_label: "Watch",
+                                #[watch]
+                                set_widget_name: &format!("{}Button", model.theme.to_string()),
+                                connect_clicked => AppMsg::Watch,
                             },
 
                         },
@@ -124,7 +162,8 @@ impl SimpleComponent for App {
                     gtk::Label {
                         #[watch]
                         set_label: &format!("{:02}::{:02}::{:02}", model.hour, model.minute, model.second),
-                        add_css_class: "time",
+                        #[watch]
+                        set_widget_name: &format!("{}time", model.theme.to_string()),
                     },
 
                     gtk::Box {
@@ -135,16 +174,22 @@ impl SimpleComponent for App {
                             #[watch]
                             set_label: &format!("{}", model.pause_continue),
                             connect_clicked => AppMsg::StartTimer,
+                            #[watch]
+                            set_widget_name: &format!("{}Button", model.theme.to_string()),
                         },
 
                         gtk::Button {
                             set_label: "Reset",
-                            connect_clicked => AppMsg::ResetTimer
+                            connect_clicked => AppMsg::ResetTimer,
+                            #[watch]
+                            set_widget_name: &format!("{}Button", model.theme.to_string()),
                         },
 
                         gtk::Button {
                             set_label: "Settings",
-                            connect_clicked => AppMsg::Settings,
+                            connect_clicked => AppMsg::ChangeTheme,
+                            #[watch]
+                            set_widget_name: &format!("{}Button", model.theme.to_string()),
                         },
                     },
                 },
@@ -161,11 +206,12 @@ impl SimpleComponent for App {
     ) -> relm4::ComponentParts<Self> {
         let model = App {
             second: 0,
-            minute: 0,
+            minute: 50,
             hour: 0,
             theme: AppTheme::Blue,
             timer: None,
             pause_continue: String::from("Start"),
+            mode: AppMode::Work,
         };
 
         let provider = gtk::CssProvider::new();
@@ -205,20 +251,15 @@ impl SimpleComponent for App {
             }
 
             AppMsg::IncTime => {
-                if self.second == 59 {
-                    self.second = 0;
-                    self.minute += 1;
+                if self.second == 0 {
+                    self.second = 59;
+                    self.minute -= 1;
                 } else {
-                    self.second += 1;
-                }
-
-                if self.minute == 59 {
-                    self.minute = 0;
-                    self.hour += 1;
+                    self.second -= 1;
                 }
             }
 
-            AppMsg::Settings => {
+            AppMsg::ChangeTheme => {
                 self.theme = self.theme.get_next_theme();
                 println!("{}", self.theme.to_string());
             }
@@ -228,10 +269,24 @@ impl SimpleComponent for App {
                 if let Some(id) = self.timer.take() {
                     id.remove();
                 }
-                self.second = 0;
-                self.minute = 0;
-                self.hour = 0;
-                self.theme = AppTheme::Dark;
+                match self.mode {
+                    AppMode::Work => {
+                        self.second = 0;
+                        self.hour = 0;
+                        self.minute = 50;
+                    }
+                    AppMode::Watch => {
+                        self.second = 0;
+                        self.hour = 0;
+                        self.minute = 25;
+                    }
+                }
+            }
+            AppMsg::Work => {
+                self.mode = AppMode::Work;
+            }
+            AppMsg::Watch => {
+                self.mode = AppMode::Watch;
             }
         }
     }
