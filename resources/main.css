@@ -1,0 +1,72 @@
+.bg-window{
+  /* backdrop-filter: blur(35px); */
+  background-image: url("../resources/1299626.jpg");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.time {
+  font-family: "Iosevka Nerd Font Mono";
+  font-size: 100px;
+  font-weight: bold;
+}
+
+.animedoro{
+  font-family: "Iosevka Nerd Font Mono";
+  font-size: 100px;
+  font-size: 48px;
+  font-weight: bold;
+}
+
+.laCruz{
+  font-size: 18px;
+}
+
+
+
+#centerBox {
+}
+
+GtkButton {
+  background-image: none;
+}
+
+#resetButton {
+  background: red;
+}
+
+button {
+  background-color: #38f;
+  background-image: none;
+  color: #fff;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif,
+    Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+  font-size: 100%;
+  font-weight: 900;
+  line-height: 1.5;
+  margin: 0;
+  padding: 0;
+  text-transform: uppercase;
+}
+
+button {
+  border-radius: 1584px;
+  border-width: 2px;
+  padding: 12.8px 48px;
+}
+
+button:hover {
+  background-color: #8cf;
+  color: #999;
+}
+
+button:active {
+  background-color: #000;
+}
+
+button image {
+  -gtk-icon-size: 40px;
+}
+
