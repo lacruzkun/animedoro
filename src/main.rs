@@ -4,7 +4,7 @@ use gtk::glib::{self, SourceId, clone};
 use gtk::{gdk, prelude::*};
 use relm4::prelude::*;
 
-struct App {
+struct MainScreen {
     second: i32,
     minute: i32,
     hour: i32,
@@ -15,61 +15,24 @@ struct App {
 }
 
 #[derive(Debug)]
-enum AppMsg {
-    ChangeTheme,
+enum MainMsg {
     IncTime,
     StartTimer,
     ResetTimer,
+    ChangeTheme,
     Work,
     Watch,
-}
-
-#[derive(Debug)]
-enum AppMode {
-    Work,
-    Watch,
-}
-
-#[derive(Debug)]
-enum AppTheme {
-    Dark,
-    Blue,
-    Serene,
-    Dream,
-}
-
-impl AppTheme {
-    fn get_next_theme(&self) -> Self {
-        match self {
-            AppTheme::Dark => AppTheme::Blue,
-            AppTheme::Blue => AppTheme::Serene,
-            AppTheme::Serene => AppTheme::Dream,
-            AppTheme::Dream => AppTheme::Dark,
-        }
-    }
-}
-
-impl fmt::Display for AppTheme {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:?}", self)
-    }
+    SetTheme(AppTheme),
+    SwitchToSettings,
 }
 
 #[relm4::component]
-impl SimpleComponent for App {
-    type Input = AppMsg;
-    type Output = ();
-    type Init = i32;
+impl SimpleComponent for MainScreen {
+    type Input = MainMsg;
+    type Output = AppMsg;
+    type Init = ();
 
-    view!(gtk::Window {
-        set_title: Some("Animedoro"),
-        set_default_width: 800,
-        set_default_height: 400,
-        #[watch]
-        set_widget_name: &model.theme.to_string(),
-        set_modal: true,
-
-        gtk::CenterBox {
+    view!(gtk::CenterBox {
             set_orientation: gtk::Orientation::Horizontal,
             set_margin_bottom: 50,
             set_margin_top: 50,
@@ -114,7 +77,7 @@ impl SimpleComponent for App {
                         set_label: &model.theme.to_string(),
                         #[watch]
                         set_widget_name: &format!("{}ThemeButton", model.theme.to_string()),
-                        connect_clicked => AppMsg::ChangeTheme,
+                        connect_clicked => MainMsg::ChangeTheme,
                     },
                 },
             },
@@ -153,14 +116,14 @@ impl SimpleComponent for App {
                                 },
                                 #[watch]
                                 set_widget_name: &format!("{}Button", model.theme.to_string()),
-                                connect_clicked => AppMsg::Work,
+                                connect_clicked => MainMsg::Work,
                             },
 
                             gtk::Button {
                                 set_label: "Watch",
                                 #[watch]
                                 set_widget_name: &format!("{}Button", model.theme.to_string()),
-                                connect_clicked => AppMsg::Watch,
+                                connect_clicked => MainMsg::Watch,
                             },
 
                         },
@@ -180,38 +143,35 @@ impl SimpleComponent for App {
                         gtk::Button {
                             #[watch]
                             set_label: &format!("{}", model.pause_continue),
-                            connect_clicked => AppMsg::StartTimer,
+                            connect_clicked => MainMsg::StartTimer,
                             #[watch]
                             set_widget_name: &format!("{}Button", model.theme.to_string()),
                         },
 
                         gtk::Button {
                             set_label: "Reset",
-                            connect_clicked => AppMsg::ResetTimer,
+                            connect_clicked => MainMsg::ResetTimer,
                             #[watch]
                             set_widget_name: &format!("{}Button", model.theme.to_string()),
                         },
 
                         gtk::Button {
                             set_label: "Settings",
-                            connect_clicked => AppMsg::ChangeTheme,
+                            connect_clicked => MainMsg::SwitchToSettings,
                             #[watch]
                             set_widget_name: &format!("{}Button", model.theme.to_string()),
                         },
                     },
                 },
             },
-        },
-
-
-    });
+        },);
 
     fn init(
         _init_value: Self::Init,
         window: Self::Root,
         _sender: relm4::ComponentSender<Self>,
     ) -> relm4::ComponentParts<Self> {
-        let model = App {
+        let model = MainScreen {
             second: 0,
             minute: 50,
             hour: 0,
@@ -233,10 +193,18 @@ impl SimpleComponent for App {
         let widgets = view_output!();
         ComponentParts { model, widgets }
     }
-
     fn update(&mut self, message: Self::Input, sender: ComponentSender<Self>) {
         match message {
-            AppMsg::StartTimer => {
+            MainMsg::IncTime => {
+                if self.second == 0 {
+                    self.second = 59;
+                    self.minute -= 1;
+                } else {
+                    self.second -= 1;
+                }
+            }
+
+            MainMsg::StartTimer => {
                 if (self.timer.is_none()) || ("Continue" == self.pause_continue) {
                     let id = glib::timeout_add_seconds_local(
                         1,
@@ -244,7 +212,7 @@ impl SimpleComponent for App {
                             #[strong]
                             sender,
                             move || {
-                                sender.input(AppMsg::IncTime);
+                                sender.input(MainMsg::IncTime);
                                 glib::ControlFlow::Continue
                             }
                         ),
@@ -257,21 +225,7 @@ impl SimpleComponent for App {
                 }
             }
 
-            AppMsg::IncTime => {
-                if self.second == 0 {
-                    self.second = 59;
-                    self.minute -= 1;
-                } else {
-                    self.second -= 1;
-                }
-            }
-
-            AppMsg::ChangeTheme => {
-                self.theme = self.theme.get_next_theme();
-                println!("{}", self.theme.to_string());
-            }
-
-            AppMsg::ResetTimer => {
+            MainMsg::ResetTimer => {
                 self.pause_continue = String::from("Start");
                 if let Some(id) = self.timer.take() {
                     id.remove();
@@ -289,11 +243,225 @@ impl SimpleComponent for App {
                     }
                 }
             }
-            AppMsg::Work => {
+            MainMsg::Work => {
                 self.mode = AppMode::Work;
+                sender.input(MainMsg::ResetTimer);
             }
-            AppMsg::Watch => {
+            MainMsg::Watch => {
                 self.mode = AppMode::Watch;
+                sender.input(MainMsg::ResetTimer);
+            }
+
+            MainMsg::ChangeTheme => {
+                let _ = sender.output(AppMsg::ChangeTheme);
+            }
+
+            MainMsg::SetTheme(x) => {
+                self.theme = x;
+            }
+
+            MainMsg::SwitchToSettings => {
+                let _ = sender.output(AppMsg::SwitchToSettings);
+            }
+        }
+    }
+}
+
+struct App {
+    theme: AppTheme,
+    screen: Screen,
+    main: Controller<MainScreen>,
+    settings: Controller<SettingsScreen>,
+}
+
+#[derive(Debug)]
+enum Screen {
+    Main,
+    Settings,
+}
+
+#[derive(Debug)]
+enum AppMsg {
+    ChangeTheme,
+    SwitchToSettings,
+}
+
+#[derive(Debug)]
+enum AppMode {
+    Work,
+    Watch,
+}
+
+#[derive(Debug, Clone)]
+enum AppTheme {
+    Dark,
+    Blue,
+    Serene,
+    Dream,
+}
+
+impl AppTheme {
+    fn get_next_theme(&self) -> Self {
+        match self {
+            AppTheme::Dark => AppTheme::Blue,
+            AppTheme::Blue => AppTheme::Serene,
+            AppTheme::Serene => AppTheme::Dream,
+            AppTheme::Dream => AppTheme::Dark,
+        }
+    }
+}
+
+impl fmt::Display for AppTheme {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
+#[relm4::component]
+impl SimpleComponent for App {
+    type Input = AppMsg;
+    type Output = ();
+    type Init = i32;
+
+    view!(gtk::Window {
+        set_title: Some("Animedoro"),
+        set_default_width: 800,
+        set_default_height: 400,
+        #[watch]
+        set_widget_name: &model.theme.to_string(),
+        set_modal: true,
+
+        gtk::Stack  {
+            set_transition_type: gtk::StackTransitionType::SlideLeftRight,
+            set_transition_duration: 250,
+            #[watch]
+            set_visible_child_name: match model.screen {
+                Screen::Main => "main",
+                Screen::Settings => "settings",
+            },
+
+            add_named: (model.main.widget(), Some("main")),
+            add_named: (model.settings.widget(), Some("settings")),
+        }
+
+    });
+
+    fn init(
+        _init_value: Self::Init,
+        window: Self::Root,
+        sender: relm4::ComponentSender<Self>,
+    ) -> relm4::ComponentParts<Self> {
+        let main = MainScreen::builder()
+            .launch(())
+            .forward(sender.input_sender(), |msg| msg);
+
+        let settings = SettingsScreen::builder()
+            .launch(())
+            .forward(sender.input_sender(), |msg| msg);
+
+        let model = App {
+            screen: Screen::Main,
+            theme: AppTheme::Blue,
+            main: main,
+            settings: settings,
+        };
+
+        let provider = gtk::CssProvider::new();
+        provider.load_from_path("resources/main.css");
+
+        gtk::style_context_add_provider_for_display(
+            &gdk::Display::default().unwrap(),
+            &provider,
+            gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
+        );
+
+        let widgets = view_output!();
+        ComponentParts { model, widgets }
+    }
+
+    fn update(&mut self, message: Self::Input, _sender: ComponentSender<Self>) {
+        match message {
+            AppMsg::ChangeTheme => {
+                self.theme = self.theme.get_next_theme();
+                self.main.emit(MainMsg::SetTheme(self.theme.clone()));
+                self.settings.emit(SetMsg::SetTheme(self.theme.clone()));
+                println!("{}", self.theme.to_string());
+            }
+            AppMsg::SwitchToSettings => {
+                self.screen = Screen::Settings;
+            }
+        }
+    }
+}
+
+struct SettingsScreen {
+    theme: AppTheme,
+}
+
+#[derive(Debug)]
+enum SetMsg {
+    ChangeTheme,
+    SetTheme(AppTheme),
+}
+
+#[relm4::component]
+impl SimpleComponent for SettingsScreen {
+    type Input = SetMsg;
+    type Output = AppMsg;
+    type Init = ();
+
+    view!(gtk::CenterBox {
+        set_orientation: gtk::Orientation::Vertical,
+
+        #[wrap(Some)]
+        set_center_widget = &gtk::Box{
+
+            gtk::Label {
+                set_label: "Current Theme",
+                #[watch]
+                set_widget_name: &format!("{}ThemeLabel", model.theme.to_string()),
+            },
+
+            gtk::Button {
+                set_label: &format!("{}", model.theme.to_string()),
+                #[watch]
+                set_widget_name: &format!("{}Button", model.theme.to_string()),
+                connect_clicked => SetMsg::ChangeTheme,
+            },
+
+        }
+    },);
+
+    fn init(
+        _init_value: Self::Init,
+        window: Self::Root,
+        _sender: relm4::ComponentSender<Self>,
+    ) -> relm4::ComponentParts<Self> {
+        let model = SettingsScreen {
+            theme: AppTheme::Blue,
+        };
+
+        let provider = gtk::CssProvider::new();
+        provider.load_from_path("resources/main.css");
+
+        gtk::style_context_add_provider_for_display(
+            &gdk::Display::default().unwrap(),
+            &provider,
+            gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
+        );
+
+        let widgets = view_output!();
+        ComponentParts { model, widgets }
+    }
+
+    fn update(&mut self, message: Self::Input, sender: ComponentSender<Self>) {
+        match message {
+            SetMsg::ChangeTheme => {
+                let _ = sender.output(AppMsg::ChangeTheme);
+            }
+
+            SetMsg::SetTheme(x) => {
+                self.theme = x;
             }
         }
     }
