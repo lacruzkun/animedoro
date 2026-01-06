@@ -8,6 +8,8 @@ struct MainScreen {
     second: i32,
     minute: i32,
     hour: i32,
+    work: i32,
+    watch: i32,
     theme: AppTheme,
     timer: Option<SourceId>,
     pause_continue: String,
@@ -23,6 +25,8 @@ enum MainMsg {
     Work,
     Watch,
     SetTheme(AppTheme),
+    SetWatch(i32),
+    SetWork(i32),
     SwitchToSettings,
 }
 
@@ -175,6 +179,8 @@ impl SimpleComponent for MainScreen {
             second: 0,
             minute: 50,
             hour: 0,
+            work: 50,
+            watch: 25,
             theme: AppTheme::Blue,
             timer: None,
             pause_continue: String::from("Start"),
@@ -234,12 +240,12 @@ impl SimpleComponent for MainScreen {
                     AppMode::Work => {
                         self.second = 0;
                         self.hour = 0;
-                        self.minute = 50;
+                        self.minute = self.work;
                     }
                     AppMode::Watch => {
                         self.second = 0;
                         self.hour = 0;
-                        self.minute = 25;
+                        self.minute = self.watch;
                     }
                 }
             }
@@ -263,6 +269,14 @@ impl SimpleComponent for MainScreen {
             MainMsg::SwitchToSettings => {
                 let _ = sender.output(AppMsg::SwitchToSettings);
             }
+
+            MainMsg::SetWatch(watch) => {
+                self.watch = watch;
+            }
+
+            MainMsg::SetWork(work) => {
+                self.work = work;
+            }
         }
     }
 }
@@ -270,6 +284,8 @@ impl SimpleComponent for MainScreen {
 struct App {
     theme: AppTheme,
     screen: Screen,
+    work: i32,
+    watch: i32,
     main: Controller<MainScreen>,
     settings: Controller<SettingsScreen>,
 }
@@ -284,6 +300,7 @@ enum Screen {
 enum AppMsg {
     ChangeTheme,
     SwitchToSettings,
+    SwitchToMain(i32, i32),
 }
 
 #[derive(Debug)]
@@ -362,6 +379,8 @@ impl SimpleComponent for App {
         let model = App {
             screen: Screen::Main,
             theme: AppTheme::Blue,
+            work: 50,
+            watch: 25,
             main: main,
             settings: settings,
         };
@@ -387,8 +406,17 @@ impl SimpleComponent for App {
                 self.settings.emit(SetMsg::SetTheme(self.theme.clone()));
                 println!("{}", self.theme.to_string());
             }
+
             AppMsg::SwitchToSettings => {
                 self.screen = Screen::Settings;
+            }
+
+            AppMsg::SwitchToMain(work, watch) => {
+                self.screen = Screen::Main;
+                self.work = work;
+                self.watch = watch;
+                self.main.emit(MainMsg::SetWork(self.work.clone()));
+                self.main.emit(MainMsg::SetWatch(self.watch.clone()));
             }
         }
     }
@@ -396,12 +424,16 @@ impl SimpleComponent for App {
 
 struct SettingsScreen {
     theme: AppTheme,
+    work: i32,
+    watch: i32,
 }
 
 #[derive(Debug)]
 enum SetMsg {
     ChangeTheme,
     SetTheme(AppTheme),
+    Back,
+    SetWork,
 }
 
 #[relm4::component]
@@ -411,24 +443,79 @@ impl SimpleComponent for SettingsScreen {
     type Init = ();
 
     view!(gtk::CenterBox {
-        set_orientation: gtk::Orientation::Vertical,
+        set_orientation: gtk::Orientation::Horizontal,
 
         #[wrap(Some)]
-        set_center_widget = &gtk::Box{
+        set_start_widget =  &gtk::CenterBox {
+            set_orientation: gtk::Orientation::Vertical,
+            set_margin_bottom: 50,
+            set_margin_top: 50,
+            set_margin_start: 50,
+            set_margin_end: 50,
 
-            gtk::Label {
-                set_label: "Current Theme",
-                #[watch]
-                set_widget_name: &format!("{}ThemeLabel", model.theme.to_string()),
-            },
+            #[wrap(Some)]
+            set_start_widget = &gtk::Button{
+                gtk::Box{
+                    set_orientation: gtk::Orientation::Horizontal,
+                    set_spacing: 10,
 
-            gtk::Button {
-                set_label: &format!("{}", model.theme.to_string()),
+                    gtk::Image {
+                        set_from_file: Some("resources/back.svg"),
+                    },
+                },
                 #[watch]
                 set_widget_name: &format!("{}Button", model.theme.to_string()),
-                connect_clicked => SetMsg::ChangeTheme,
+                connect_clicked => SetMsg::Back,
             },
+        },
 
+        #[wrap(Some)]
+        set_center_widget = &gtk::CenterBox{
+            set_orientation: gtk::Orientation::Vertical,
+
+            #[wrap(Some)]
+            set_center_widget = &gtk::Box{
+                set_orientation: gtk::Orientation::Vertical,
+                set_spacing: 10,
+
+                gtk::Label {
+                    set_label: "Current Theme",
+                    #[watch]
+                    set_widget_name: &format!("{}ThemeLabel", model.theme.to_string()),
+                },
+
+                gtk::Button {
+                    set_label: &format!("{}", model.theme.to_string()),
+                    #[watch]
+                    set_widget_name: &format!("{}Button", model.theme.to_string()),
+                    connect_clicked => SetMsg::ChangeTheme,
+                },
+
+                gtk::Label {
+                    set_label: "Work Duration",
+                    #[watch]
+                    set_widget_name: &format!("{}ThemeLabel", model.theme.to_string()),
+                },
+
+                gtk::Entry{
+                    set_buffer: &gtk::EntryBuffer::new(Some(&format!("{}", model.work))),
+                    set_widget_name: &format!("{}Button", model.theme.to_string()),
+                    connect_activate => move |entry| {
+                        sender.input(SetMsg::SetWork)
+                    },
+                },
+
+                gtk::Label {
+                    set_label: "Watch Duration",
+                    #[watch]
+                    set_widget_name: &format!("{}ThemeLabel", model.theme.to_string()),
+                },
+
+                gtk::Entry{
+                    set_buffer: &gtk::EntryBuffer::new(Some(&format!("{}", model.watch))),
+                    set_widget_name: &format!("{}Button", model.theme.to_string()),
+                },
+            }
         }
     },);
 
@@ -439,6 +526,8 @@ impl SimpleComponent for SettingsScreen {
     ) -> relm4::ComponentParts<Self> {
         let model = SettingsScreen {
             theme: AppTheme::Blue,
+            work: 50,
+            watch: 25,
         };
 
         let provider = gtk::CssProvider::new();
@@ -463,6 +552,12 @@ impl SimpleComponent for SettingsScreen {
             SetMsg::SetTheme(x) => {
                 self.theme = x;
             }
+
+            SetMsg::Back => {
+                let _ = sender.output(AppMsg::SwitchToMain(self.work, self.watch));
+            }
+
+            SetMsg::SetWork => {}
         }
     }
 }
