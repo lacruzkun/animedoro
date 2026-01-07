@@ -12,3 +12,8 @@ lto = "fat"
 codegen-units = 1
 panic = "abort"
 strip = true
+
+[package.metadata.bundle]
+name = "Animedoro"
+identifier = "com.animedoro"
+resources = ["resources"]

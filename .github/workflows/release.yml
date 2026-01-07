@@ -10,21 +10,24 @@ permissions:
   contents: write
 
 jobs:
-  linux:
-    name: Linux (x86_64)
+  appimage:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Install system dependencies
+      - name: Install build deps
         run: |
           sudo apt update
           sudo apt install -y \
+            build-essential \
             libgtk-4-dev \
             libglib2.0-dev \
             libpango1.0-dev \
-            libcairo2-dev
+            libcairo2-dev \
+            libxkbcommon-dev \
+            patchelf
 
       - name: Install Rust
         uses: actions-rs/toolchain@v1
@@ -35,26 +38,50 @@ jobs:
       - name: Build
         run: cargo build --release
 
-      - name: Package
+      - name: Prepare AppDir
         run: |
-          mkdir dist
-          cp target/release/animedoro dist/
-          tar -czf animedoro-linux-x86_64.tar.gz -C dist .
+          mkdir -p AppDir/usr/bin
+          mkdir -p AppDir/usr/share
+          cp target/release/animedoro AppDir/usr/bin/
+          cp -r resources AppDir/usr/share/
+
+      - name: Download linuxdeploy
+        run: |
+          wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          chmod +x linuxdeploy-x86_64.AppImage
+
+      - name: Download GTK plugin
+        run: |
+          wget https://github.com/linuxdeploy/linuxdeploy-plugin-gtk/releases/download/continuous/linuxdeploy-plugin-gtk.sh
+          chmod +x linuxdeploy-plugin-gtk.sh
+
+      - name: Build AppImage
+        run: |
+          export LINUXDEPLOY_PLUGINS=gtk
+          ./linuxdeploy-x86_64.AppImage \
+            --appdir AppDir \
+            --executable AppDir/usr/bin/animedoro \
+            --desktop-file your.desktop \
+            --output appimage
 
       - name: Upload to release
+        if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
         with:
-          files: animedoro-linux-x86_64.tar.gz
+          files: Animedoro-x86_64.AppImage
 
   macos:
     name: macOS (universal)
     runs-on: macos-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Install GTK
-        run: brew install gtk4
+      - name: Install system dependencies
+        run: |
+          brew update
+          brew install gtk4 pkg-config
 
       - name: Install Rust
         uses: actions-rs/toolchain@v1
@@ -62,16 +89,19 @@ jobs:
           toolchain: stable
           override: true
 
-      - name: Build
-        run: cargo build --release
+      - name: Install cargo-bundle
+        run: cargo install cargo-bundle
 
-      - name: Package
+      - name: Build and bundle
+        run: cargo bundle --release
+
+      - name: Zip app bundle
         run: |
-          mkdir dist
-          cp target/release/animedoro dist/
-          tar -czf animedoro-macos.tar.gz -C dist .
+          cd target/release/bundle/osx
+          zip -r Animedoro-macos.zip Animedoro.app
 
-      - name: Upload to release
+      - name: Upload to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
         with:
-          files: animedoro-macos.tar.gz
+          files: target/release/bundle/osx/Animedoro-macos.zip

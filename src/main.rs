@@ -113,7 +113,7 @@ impl SimpleComponent for MainScreen {
                                     set_spacing: 10,
 
                                     gtk::Image {
-                                        set_from_file: Some("resources/study.svg"),
+                                        set_from_file: Some(binary_relative("study.svg")),
                                     },
 
                                     gtk::Label {
@@ -382,7 +382,7 @@ impl SimpleComponent for App {
         };
 
         let provider = gtk::CssProvider::new();
-        let abs_path = binary_relative("../../resources/main.css");
+        let abs_path = binary_relative("main.css");
         provider.load_from_path(abs_path);
 
         gtk::style_context_add_provider_for_display(
@@ -459,7 +459,7 @@ impl SimpleComponent for SettingsScreen {
                     set_spacing: 10,
 
                     gtk::Image {
-                        set_from_file: Some("resources/back.svg"),
+                        set_from_file: Some(binary_relative("back.svg")),
                     },
                 },
                 #[watch]
@@ -595,7 +595,17 @@ impl SimpleComponent for SettingsScreen {
 }
 
 fn binary_relative(path: &str) -> PathBuf{
-    env::current_exe().expect("cannot locate executable").parent().expect("executable doesn't have a parent").join(path)
+    if cfg!(target_os = "macos"){
+        let exe = env::current_exe().expect("cannot locate executable");
+        exe.parent().expect("executable doesn't have parent").join("Resources").join("resources").join(path)
+    }
+    else {
+        env::current_exe().expect("cannot locate executable")
+            .parent()
+            .expect("executable doesn't have a parent")
+            .join("resources")
+            .join(path)
+    }
 }
 
 fn main() {
