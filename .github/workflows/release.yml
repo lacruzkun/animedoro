@@ -1,0 +1,76 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  linux:
+    name: Linux (x86_64)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y \
+            libgtk-4-dev \
+            libglib2.0-dev \
+            libpango1.0-dev \
+            libcairo2-dev
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Build
+        run: cargo build --release
+
+      - name: Package
+        run: |
+          mkdir dist
+          cp target/release/my_timer dist/
+          tar -czf my_timer-linux-x86_64.tar.gz -C dist .
+
+      - name: Upload to release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: my_timer-linux-x86_64.tar.gz
+
+  macos:
+    name: macOS (universal)
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install GTK
+        run: brew install gtk4
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Build
+        run: cargo build --release
+
+      - name: Package
+        run: |
+          mkdir dist
+          cp target/release/my_timer dist/
+          tar -czf my_timer-macos.tar.gz -C dist .
+
+      - name: Upload to release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: my_timer-macos.tar.gz
