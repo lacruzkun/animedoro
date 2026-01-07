@@ -1,6 +1,6 @@
 /*  Blue Theme */
 #Blue{
-  background-image: url("../resources/Blue.jpg");
+  background-image: url("Blue.jpg");
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;
@@ -86,7 +86,7 @@
 
 /* Dark Theme */
 #Dark{
-  background-image: url("../resources/Dark.png");
+  background-image: url("Dark.png");
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;
@@ -171,7 +171,7 @@
 
 /* Serene Theme */
 #Serene{
-  background-image: url("../resources/Serene.jpeg");
+  background-image: url("Serene.jpeg");
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;
@@ -257,7 +257,7 @@
 
 /* Dream Theme */
 #Dream{
-  background-image: url("../resources/Dream.gif");
+  background-image: url("Dream.gif");
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;

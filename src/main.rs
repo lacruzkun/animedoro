@@ -1,4 +1,6 @@
 use core::fmt;
+use std::env;
+use std::path::PathBuf;
 
 use gtk::glib::{self, SourceId, clone};
 use gtk::{gdk, prelude::*};
@@ -187,15 +189,6 @@ impl SimpleComponent for MainScreen {
             mode: AppMode::Work,
         };
 
-        let provider = gtk::CssProvider::new();
-        provider.load_from_path("resources/main.css");
-
-        gtk::style_context_add_provider_for_display(
-            &gdk::Display::default().unwrap(),
-            &provider,
-            gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
-        );
-
         let widgets = view_output!();
         ComponentParts { model, widgets }
     }
@@ -204,6 +197,9 @@ impl SimpleComponent for MainScreen {
             MainMsg::IncTime => {
                 if self.second == 0 {
                     self.second = 59;
+                    if self.minute == 0 {
+                        sender.input(MainMsg::ResetTimer);
+                    }
                     self.minute -= 1;
                 } else {
                     self.second -= 1;
@@ -386,7 +382,8 @@ impl SimpleComponent for App {
         };
 
         let provider = gtk::CssProvider::new();
-        provider.load_from_path("resources/main.css");
+        let abs_path = binary_relative("../../resources/main.css");
+        provider.load_from_path(abs_path);
 
         gtk::style_context_add_provider_for_display(
             &gdk::Display::default().unwrap(),
@@ -417,6 +414,7 @@ impl SimpleComponent for App {
                 self.watch = watch;
                 self.main.emit(MainMsg::SetWork(self.work.clone()));
                 self.main.emit(MainMsg::SetWatch(self.watch.clone()));
+                self.main.emit(MainMsg::ResetTimer);
             }
         }
     }
@@ -433,7 +431,8 @@ enum SetMsg {
     ChangeTheme,
     SetTheme(AppTheme),
     Back,
-    SetWork,
+    SetWork(i32),
+    SetWatch(i32),
 }
 
 #[relm4::component]
@@ -497,24 +496,60 @@ impl SimpleComponent for SettingsScreen {
                     set_widget_name: &format!("{}ThemeLabel", model.theme.to_string()),
                 },
 
-                gtk::Entry{
-                    set_buffer: &gtk::EntryBuffer::new(Some(&format!("{}", model.work))),
-                    set_widget_name: &format!("{}Button", model.theme.to_string()),
-                    connect_activate => move |entry| {
-                        sender.input(SetMsg::SetWork)
+                gtk::Box{
+                    set_spacing: 10,
+                    
+                    gtk::Button {
+                        set_label: "+",
+                        connect_clicked => SetMsg::SetWork(1),
+                        #[watch]
+                        set_widget_name: &format!("{}Button", model.theme.to_string()),
+                    },
+
+                    gtk::Label {
+                        #[watch]
+                        set_label: &format!("{}", model.work),
+                        #[watch]
+                        set_widget_name: &format!("{}ThemeLabel", model.theme.to_string()),
+                    },
+
+                    gtk::Button {
+                        set_label: "-",
+                        connect_clicked => SetMsg::SetWork(-1),
+                        #[watch]
+                        set_widget_name: &format!("{}Button", model.theme.to_string()),
                     },
                 },
 
                 gtk::Label {
+                    #[watch]
                     set_label: "Watch Duration",
                     #[watch]
                     set_widget_name: &format!("{}ThemeLabel", model.theme.to_string()),
                 },
 
-                gtk::Entry{
-                    set_buffer: &gtk::EntryBuffer::new(Some(&format!("{}", model.watch))),
-                    set_widget_name: &format!("{}Button", model.theme.to_string()),
-                },
+                gtk::Box{
+                    set_spacing: 10,
+                    gtk::Button {
+                        set_label: "+",
+                        connect_clicked => SetMsg::SetWatch(1),
+                        #[watch]
+                        set_widget_name: &format!("{}Button", model.theme.to_string()),
+                    },
+
+                    gtk::Label {
+                        #[watch]
+                        set_label: &format!("{}", model.watch),
+                        set_widget_name: &format!("{}ThemeLabel", model.theme.to_string()),
+                    },
+
+                    gtk::Button {
+                        set_label: "-",
+                        connect_clicked => SetMsg::SetWatch(-1),
+                        #[watch]
+                        set_widget_name: &format!("{}Button", model.theme.to_string()),
+                    },
+                }
             }
         }
     },);
@@ -522,22 +557,13 @@ impl SimpleComponent for SettingsScreen {
     fn init(
         _init_value: Self::Init,
         window: Self::Root,
-        _sender: relm4::ComponentSender<Self>,
+        sender: relm4::ComponentSender<Self>,
     ) -> relm4::ComponentParts<Self> {
         let model = SettingsScreen {
             theme: AppTheme::Blue,
             work: 50,
             watch: 25,
         };
-
-        let provider = gtk::CssProvider::new();
-        provider.load_from_path("resources/main.css");
-
-        gtk::style_context_add_provider_for_display(
-            &gdk::Display::default().unwrap(),
-            &provider,
-            gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
-        );
 
         let widgets = view_output!();
         ComponentParts { model, widgets }
@@ -557,9 +583,19 @@ impl SimpleComponent for SettingsScreen {
                 let _ = sender.output(AppMsg::SwitchToMain(self.work, self.watch));
             }
 
-            SetMsg::SetWork => {}
+            SetMsg::SetWork(x) => {
+                self.work += x;
+            }
+
+            SetMsg::SetWatch(x) => {
+                self.watch += x;
+            }
         }
     }
+}
+
+fn binary_relative(path: &str) -> PathBuf{
+    env::current_exe().expect("cannot locate executable").parent().expect("executable doesn't have a parent").join(path)
 }
 
 fn main() {
