@@ -37,13 +37,13 @@ jobs:
       - name: Package
         run: |
           mkdir dist
-          cp target/release/my_timer dist/
-          tar -czf my_timer-linux-x86_64.tar.gz -C dist .
+          cp target/release/animedoro dist/
+          tar -czf animedoro-linux-x86_64.tar.gz -C dist .
 
       - name: Upload to release
         uses: softprops/action-gh-release@v1
         with:
-          files: my_timer-linux-x86_64.tar.gz
+          files: animedoro-linux-x86_64.tar.gz
 
   macos:
     name: macOS (universal)
@@ -67,10 +67,10 @@ jobs:
       - name: Package
         run: |
           mkdir dist
-          cp target/release/my_timer dist/
-          tar -czf my_timer-macos.tar.gz -C dist .
+          cp target/release/animedoro dist/
+          tar -czf animedoro-macos.tar.gz -C dist .
 
       - name: Upload to release
         uses: softprops/action-gh-release@v1
         with:
-          files: my_timer-macos.tar.gz
+          files: animedoro-macos.tar.gz
