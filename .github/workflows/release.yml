@@ -47,7 +47,7 @@ jobs:
         mv AppDir/usr/bin/animedoro AppDir/usr/bin/Animedoro
         cp -r resources AppDir/usr/bin/
 
-        cp Animedoro.desktop AppDir/usr/share/applications/
+        cp Animedoro.desktop AppDir/
 
     - name: Create AppRun
       run: |
@@ -63,7 +63,7 @@ jobs:
       run: |
         mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps
         printf '\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x01\x00\x00\x00\x01\x00\x08\x02\x00\x00\x00\x90wS\xde\x00\x00\x00\nIDATx\x9cc`\x00\x00\x00\x02\x00\x01\xe2!\xbc3\x00\x00\x00\x00IEND\xaeB`\x82' \
-        > AppDir/usr/share/icons/hicolor/256x256/apps/Animedoro.png
+        > AppDir/Animedoro.png
 
     - name: Download appimagetool
       run: |
