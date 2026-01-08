@@ -1,5 +1,7 @@
 [Desktop Entry]
 Type=Application
 Name=Animedoro
-Exec=animedoro
+Exec=Animedoro
+Icon=Animedoro
 Categories=Utility;
+Terminal=false

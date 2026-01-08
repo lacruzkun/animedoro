@@ -44,9 +44,10 @@ jobs:
         mkdir -p AppDir/usr/share/applications
 
         cp target/release/animedoro AppDir/usr/bin/
+        mv AppDir/usr/bin/animedoro AppDir/usr/bin/Animedoro
         cp -r resources AppDir/usr/bin/
 
-        cp animedoro.desktop AppDir/usr/share/applications/
+        cp Animedoro.desktop AppDir/usr/share/applications/
 
     - name: Create AppRun
       run: |
@@ -54,9 +55,15 @@ jobs:
         #!/bin/sh
         HERE="$(dirname "$(readlink -f "$0")")"
         export LD_LIBRARY_PATH="$HERE/usr/lib:$LD_LIBRARY_PATH"
-        exec "$HERE/usr/bin/animedoro"
+        exec "$HERE/usr/bin/Animedoro"
         EOF
         chmod +x AppDir/AppRun
+
+    - name: Generate placeholder icon
+      run: |
+        mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps
+        printf '\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x01\x00\x00\x00\x01\x00\x08\x02\x00\x00\x00\x90wS\xde\x00\x00\x00\nIDATx\x9cc`\x00\x00\x00\x02\x00\x01\xe2!\xbc3\x00\x00\x00\x00IEND\xaeB`\x82' \
+        > AppDir/usr/share/icons/hicolor/256x256/apps/Animedoro.png
 
     - name: Download appimagetool
       run: |
