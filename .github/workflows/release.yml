@@ -45,7 +45,7 @@ jobs:
         cp target/release/animedoro AppDir/usr/bin/
         cp -r resources AppDir/usr/bin/
 
-        cp packaging/animedoro.desktop AppDir/usr/share/applications/
+        cp animedoro.desktop AppDir/usr/share/applications/
 
     - name: Create AppRun
       run: |
