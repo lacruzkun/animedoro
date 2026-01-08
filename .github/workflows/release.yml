@@ -28,6 +28,7 @@ jobs:
           libpango1.0-dev \
           libcairo2-dev \
           libgdk-pixbuf-2.0-dev \
+          libfuse2 \
           patchelf \
           wget
 
