@@ -59,11 +59,6 @@ jobs:
         EOF
         chmod +x AppDir/AppRun
 
-    - name: Generate placeholder icon
-      run: |
-        mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps
-        printf '\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x01\x00\x00\x00\x01\x00\x08\x02\x00\x00\x00\x90wS\xde\x00\x00\x00\nIDATx\x9cc`\x00\x00\x00\x02\x00\x01\xe2!\xbc3\x00\x00\x00\x00IEND\xaeB`\x82' \
-        > Animedoro.png
 
     - name: Download linux deploy
       run: |
@@ -82,38 +77,3 @@ jobs:
         name: Animedoro-AppImage
         path: Animedoro-x86_64.AppImage
 
-  macos:
-    name: macOS (universal)
-    runs-on: macos-12.0.0
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install system dependencies
-        run: |
-          brew update
-          brew install gtk4 pkg-config
-
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
-
-      - name: Install cargo-bundle
-        run: cargo install cargo-bundle
-
-      - name: Build and bundle
-        run: cargo bundle --release
-
-      - name: Zip app bundle
-        run: |
-          cd target/release/bundle/osx
-          zip -r Animedoro-macos.zip Animedoro.app
-
-      - name: Upload to GitHub Release
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v1
-        with:
-          files: target/release/bundle/osx/Animedoro-macos.zip
