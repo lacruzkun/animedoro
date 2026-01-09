@@ -56,7 +56,7 @@ jobs:
     - name: Build AppImage
       run: |
 
-        ./linuxdeploy-x86_64.AppImage --appdir AppDir --plugin gtk --output Animedoro --icon-file Animedoro.png --desktop-file Animedoro.desktop
+        ./linuxdeploy-x86_64.AppImage --appdir AppDir --plugin gtk --output appimage --icon-file Animedoro.png --desktop-file Animedoro.desktop
 
     - name: Upload AppImage
       uses: actions/upload-artifact@v4
