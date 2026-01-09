@@ -47,19 +47,6 @@ jobs:
         mv AppDir/usr/bin/animedoro AppDir/usr/bin/Animedoro
         cp -r resources AppDir/usr/bin/
 
-        cp Animedoro.desktop AppDir/
-
-    - name: Create AppRun
-      run: |
-        cat << 'EOF' > AppDir/AppRun
-        #!/bin/sh
-        HERE="$(dirname "$(readlink -f "$0")")"
-        export LD_LIBRARY_PATH="$HERE/usr/lib:$LD_LIBRARY_PATH"
-        exec "$HERE/usr/bin/Animedoro"
-        EOF
-        chmod +x AppDir/AppRun
-
-
     - name: Download linux deploy
       run: |
         wget -c "https://raw.githubusercontent.com/linuxdeploy/linuxdeploy-plugin-gtk/master/linuxdeploy-plugin-gtk.sh"
