@@ -65,14 +65,16 @@ jobs:
         printf '\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x01\x00\x00\x00\x01\x00\x08\x02\x00\x00\x00\x90wS\xde\x00\x00\x00\nIDATx\x9cc`\x00\x00\x00\x02\x00\x01\xe2!\xbc3\x00\x00\x00\x00IEND\xaeB`\x82' \
         > AppDir/Animedoro.png
 
-    - name: Download appimagetool
+    - name: Download linux deploy
       run: |
-        wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -O appimagetool
-        chmod +x appimagetool
+        wget -c "https://raw.githubusercontent.com/linuxdeploy/linuxdeploy-plugin-gtk/master/linuxdeploy-plugin-gtk.sh"
+        wget -c "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage"
+        chmod +x linuxdeploy-x86_64.AppImage linuxdeploy-plugin-gtk.sh
 
     - name: Build AppImage
       run: |
-        ARCH=x86_64 ./appimagetool AppDir Animedoro-x86_64.AppImage
+
+        ./linuxdeploy-x86_64.AppImage --appdir AppDir --plugin gtk --output Animedoro --icon-file AppDir/Animedoro.png --desktop-file AppDir/Animedoro.desktop
 
     - name: Upload AppImage
       uses: actions/upload-artifact@v4
