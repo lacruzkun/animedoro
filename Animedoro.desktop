@@ -3,5 +3,5 @@ Type=Application
 Name=Animedoro
 Exec=Animedoro
 Icon=Animedoro
-Categories=Utility;
+Categories=Video;
 Terminal=false

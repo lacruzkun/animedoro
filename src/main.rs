@@ -338,8 +338,6 @@ impl SimpleComponent for App {
 
     view!(gtk::Window {
         set_title: Some("Animedoro"),
-        set_default_width: 800,
-        set_default_height: 400,
         #[watch]
         set_widget_name: &model.theme.to_string(),
         set_modal: true,
@@ -347,14 +345,15 @@ impl SimpleComponent for App {
         gtk::Stack  {
             set_transition_type: gtk::StackTransitionType::SlideLeftRight,
             set_transition_duration: 250,
+            add_named: (model.main.widget(), Some("main")),
+            add_named: (model.settings.widget(), Some("settings")),
+
             #[watch]
             set_visible_child_name: match model.screen {
                 Screen::Main => "main",
                 Screen::Settings => "settings",
             },
 
-            add_named: (model.main.widget(), Some("main")),
-            add_named: (model.settings.widget(), Some("settings")),
         }
 
     });
