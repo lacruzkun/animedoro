@@ -59,8 +59,10 @@ jobs:
         ./linuxdeploy-x86_64.AppImage --appdir AppDir --plugin gtk --output appimage --icon-file Animedoro.png --desktop-file Animedoro.desktop
 
     - name: Upload AppImage
-      uses: actions/upload-artifact@v4
+      uses: softprops/action-gh-release@v2
       with:
-        name: Animedoro-AppImage
-        path: Animedoro-x86_64.AppImage
+        files: |
+          Animedoro-x86_64.AppImage
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
